@@ -1,0 +1,7 @@
+# Force LF on all text files so Windows CRLF (\r) never corrupts hashes, wordlists,
+# the entrypoint shebang, or shell scripts when the lab runs inside Linux containers.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gz binary

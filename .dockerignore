@@ -1,0 +1,10 @@
+# Keep the build context lean — don't ship loot or runtime state into the image.
+.git/
+.github/
+work/
+*.pot
+*.potfile
+dist/
+*.tar.gz
+**/.DS_Store
+**/Thumbs.db

@@ -1,0 +1,29 @@
+# class.rule — a small, readable Hashcat/John rule set for the class.
+# Each line is ONE rule applied to every word in the wordlist.
+# This is intentionally tiny so beginners can read what each transform does.
+# (best64.rule / rockyou-30000.rule are bigger real-world equivalents.)
+#
+# Rule syntax cheat:  c=Capitalize  u=UPPER  l=lower  $X=append X  ^X=prepend X
+#                     sXY=substitute X->Y   r=reverse   d=duplicate
+:
+c
+u
+l
+$1
+$1$2$3
+c $1$2$3
+$2$0$2$6
+$2$0$2$5
+c $1
+c $2$0$2$6
+c $2$0$2$5
+c $!
+$!
+$@
+sa@
+so0
+si1
+se3
+ss$
+c sa@ so0
+c $2$0$2$6 $!

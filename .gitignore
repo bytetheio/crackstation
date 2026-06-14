@@ -1,0 +1,17 @@
+# Loot / runtime artifacts — never commit cracked results or downloaded wordlists
+work/*
+!work/.gitkeep
+*.pot
+*.potfile
+john.pot
+hashcat.potfile
+custom.txt
+rockyou.txt
+*.restore
+
+# Prebuilt image bundles — too big for git; distribute via GHCR
+dist/
+*.tar.gz
+
+.DS_Store
+Thumbs.db

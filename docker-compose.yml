@@ -1,0 +1,47 @@
+# Cracking the Code — local, offline lab.
+#
+# SAFETY: the 'cracklab' network is marked `internal: true` — at RUNTIME these
+# containers cannot reach the internet or your LAN. The vuln-login target has NO
+# published host ports; it is reachable ONLY from crackstation over the internal
+# Docker network. Nothing here ever touches a third-party system.
+#
+# Quick start:
+#   docker compose build
+#   docker compose up -d vuln-login          # start the Hydra target
+#   docker compose run --rm crackstation      # drop into the toolbox
+# Teardown (removes everything, including volumes):
+#   docker compose down -v
+
+services:
+  crackstation:
+    build: .
+    # Published to GHCR so attendees can `docker pull` instead of building.
+    # `docker compose build` still works and (re)tags this same name locally.
+    image: ghcr.io/bytetheio/crackstation:latest
+    container_name: crackstation
+    hostname: crackstation
+    networks: [cracklab]
+    volumes:
+      - ./:/lab:ro            # repo lab files (hashes, wordlists, rules) read-only
+      - ./work:/work          # your writable loot dir (bind-mounted to the host)
+    working_dir: /work
+    stdin_open: true
+    tty: true
+    # Bring up the Hydra target automatically so `docker compose run crackstation`
+    # stages the whole lab in one command.
+    depends_on: [vuln-login]
+    command: /bin/bash
+
+  vuln-login:
+    build: ./hydra-target
+    image: ghcr.io/bytetheio/vuln-login:latest
+    container_name: vuln-login
+    hostname: vuln-login
+    networks: [cracklab]
+    # NOTE: intentionally NO `ports:` mapping. Internal lab network only.
+
+networks:
+  cracklab:
+    name: cracklab
+    driver: bridge
+    internal: true            # no egress to the internet / host LAN at runtime
