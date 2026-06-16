@@ -63,6 +63,7 @@ from warm-up to bonus. (Answer keys are kept out of this repo on purpose.)
 | # | Hash / target | Skill it teaches |
 |---|---------------|------------------|
 | C1 | `sample-hashes/c1_md5.txt` | Identify a hash, then a dictionary attack |
+| C1B | `sample-hashes/b1_base64.txt` | **Encoding ≠ hashing** — Base64 is reversible; just `base64 -d` it |
 | C2 | `sample-hashes/c2_sha1.txt` | Pick the right algorithm/mode (not everything is MD5) |
 | C3 | `sample-hashes/c3_md5.txt` | Rule-based attack (`-r rules/class.rule`) |
 | C4 | `sample-hashes/c4_md5.txt` | Mask / smart brute force (`-a 3`) |
