@@ -1,24 +1,20 @@
 # vuln-login — intentionally weak SSH target (LAB ONLY)
 
 A minimal Alpine + OpenSSH container with a single account (`labuser`) set to a
-**deliberately weak password** — one that appears in the bundled demo wordlist, so Hydra
-finds it in seconds. (Discovering it is Challenge **C6**.)
+**deliberately weak password**. It's the target for the **C6** online-guessing challenge.
 
-It exists to demonstrate **online password guessing** with Hydra against a service you
-own and control. Safety properties:
+It exists to demonstrate **online password guessing** against a service you own and
+control. Safety properties:
 
 - **No published host ports** (`docker-compose.yml` has no `ports:` for this service).
 - Lives on the **`internal: true`** `cracklab` network — no internet/LAN reachability at runtime.
 - Reachable **only** from the `crackstation` container, as the hostname `vuln-login`.
 
-## Demo (run from inside crackstation)
+## How it's used
 
-```bash
-# tiny wordlist so the demo finishes in seconds
-hydra -l labuser -P /lab/wordlists/hydra-small.txt ssh://vuln-login
-```
-
-Expected: Hydra recovers `labuser`'s password and prints it. That's Challenge **C6**.
+From the `crackstation` container, point an online login brute-forcer at `ssh://vuln-login`
+(username `labuser`). Working out the password is the challenge — no spoilers here; your
+instructor has the answer key.
 
 ## Watch the attack land (instructor, separate terminal)
 

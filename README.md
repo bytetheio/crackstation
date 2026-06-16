@@ -48,7 +48,7 @@ Dockerfile            # the crackstation toolbox image (Kali + tools + rockyou +
 docker-compose.yml    # crackstation + the weak-login Hydra target (internal network, no host ports)
 entrypoint.sh         # stages the lab and prints the welcome banner
 hydra-target/         # intentionally weak SSH login target (LAB ONLY)
-sample-hashes/        # the challenge hashes (c1..c8) — hashes only
+sample-hashes/        # the challenge targets (c1..c8 hashes + one base64 puzzle)
 wordlists/            # a tiny offline starter list + a small list for the Hydra demo
 rules/class.rule      # a small, readable Hashcat/John rule set
 web/intranet.html     # a fake local page for the CeWL custom-wordlist exercise
@@ -57,32 +57,34 @@ web/intranet.html     # a fake local page for the CeWL custom-wordlist exercise
 
 ## The challenge ladder
 
-Crack a hash → recover the password → that's your flag, formatted `DC256{...}`. Difficulty climbs
-from warm-up to bonus. (Answer keys are kept out of this repo on purpose.)
+Recover the secret behind each target → that's your flag, formatted `DC256{...}`, which you submit to
+the class leaderboard. Difficulty climbs from warm-up to hard. **Figuring out the right approach is
+the challenge** — so the targets are listed below, but *how* to beat each one is left to you.
 
-| # | Hash / target | Skill it teaches |
-|---|---------------|------------------|
-| C1 | `sample-hashes/c1_md5.txt` | Identify a hash, then a dictionary attack |
-| C1B | `sample-hashes/b1_base64.txt` | **Encoding ≠ hashing** — Base64 is reversible; just `base64 -d` it |
-| C2 | `sample-hashes/c2_sha1.txt` | Pick the right algorithm/mode (not everything is MD5) |
-| C3 | `sample-hashes/c3_md5.txt` | Rule-based attack (`-r rules/class.rule`) |
-| C4 | `sample-hashes/c4_md5.txt` | Mask / smart brute force (`-a 3`) |
-| C5 | `sample-hashes/c5_md5.txt` | Custom wordlist with CeWL + hybrid (`-a 6`) |
-| C6 | `ssh://vuln-login` | Online guessing with Hydra (local target only) |
-| C7 | `sample-hashes/c7_bcrypt.txt` | A slow hash — why key stretching matters |
-| C8 | `sample-hashes/c8_ntlm.txt` | NTLM (unsalted) and why it matters in Windows/AD |
+> 🚩 This is a **CTF**. Hints, the answer key, walkthroughs, and the slides are **deliberately not in
+> this repo** — your instructor has them. No spoilers here.
 
-Starter commands (run inside the container):
+| # | Target | Difficulty |
+|---|--------|:----------:|
+| C1 | `sample-hashes/c1_md5.txt` | ⭐ warm-up |
+| C1B | `sample-hashes/b1_base64.txt` | ⭐ warm-up — *wait… is this even a hash?* |
+| C2 | `sample-hashes/c2_sha1.txt` | ⭐ warm-up |
+| C3 | `sample-hashes/c3_md5.txt` | ⭐⭐ easy |
+| C4 | `sample-hashes/c4_md5.txt` | ⭐⭐⭐ medium |
+| C5 | `sample-hashes/c5_md5.txt` | ⭐⭐⭐ medium |
+| C6 | `ssh://vuln-login` | ⭐⭐⭐ medium · live login |
+| C7 | `sample-hashes/c7_bcrypt.txt` | ⭐⭐⭐⭐ hard |
+| C8 | `sample-hashes/c8_ntlm.txt` | ⭐⭐⭐⭐ hard |
+
+### Your toolbox
+Everything is pre-staged at `/lab/` (targets in `/lab/sample-hashes`, `/lab/wordlists`, `$ROCKYOU`,
+`/lab/rules`, the CeWL page in `/lab/web`); your output goes in `/work`. The container ships:
+`john`, `hashcat` (CPU-ready), `hydra`, `cewl`, `crunch`, `hashid`, `nth` (name-that-hash), plus
+`rockyou` and SecLists. Picking the right tool and mode for each target is the whole game.
+
+A reasonable first move on any unknown value is simply to **identify** it before you attack:
 ```bash
-# identify, then crack C1 with a wordlist
-nth -t "$(cat /lab/sample-hashes/c1_md5.txt)"
-john --format=raw-md5 -w $ROCKYOU /lab/sample-hashes/c1_md5.txt && john --show /lab/sample-hashes/c1_md5.txt
-
-# Hashcat works on CPU here too
-hashcat -m 0 -a 0 /lab/sample-hashes/c1_md5.txt $ROCKYOU
-
-# online guessing against the local toy target
-hydra -l labuser -P /lab/wordlists/hydra-small.txt ssh://vuln-login
+hashid <file>            # or:  nth -t "$(cat <file>)"
 ```
 
 ## Notes
