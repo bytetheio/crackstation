@@ -69,6 +69,7 @@ the challenge** — so the targets are listed below, but *how* to beat each one 
 | C1 | `sample-hashes/c1_md5.txt` | ⭐ warm-up |
 | C1B | `sample-hashes/b1_base64.txt` | ⭐ warm-up — *wait… is this even a hash?* |
 | C2 | `sample-hashes/c2_sha1.txt` | ⭐ warm-up |
+| C2B | `sample-hashes/c2b_md5.txt` *(read `c2b_README.txt`)* | ⭐⭐ easy |
 | C3 | `sample-hashes/c3_md5.txt` | ⭐⭐ easy |
 | C4 | `sample-hashes/c4_md5.txt` | ⭐⭐⭐ medium |
 | C5 | `sample-hashes/c5_md5.txt` | ⭐⭐⭐ medium |
