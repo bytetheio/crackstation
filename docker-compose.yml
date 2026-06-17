@@ -18,6 +18,9 @@ services:
     # Published to GHCR so attendees can `docker pull` instead of building.
     # `docker compose build` still works and (re)tags this same name locally.
     image: ghcr.io/bytetheio/crackstation:latest
+    # The image is amd64. Pinning this runs it natively on Intel/Windows and via
+    # Rosetta/QEMU emulation on Apple Silicon — and silences the platform-mismatch warning.
+    platform: linux/amd64
     container_name: crackstation
     hostname: crackstation
     networks: [cracklab]
@@ -35,6 +38,7 @@ services:
   vuln-login:
     build: ./hydra-target
     image: ghcr.io/bytetheio/vuln-login:latest
+    platform: linux/amd64
     container_name: vuln-login
     hostname: vuln-login
     networks: [cracklab]

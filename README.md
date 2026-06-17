@@ -12,10 +12,32 @@ and `rockyou.txt` — plus an intentionally weak local login target for the onli
 
 ---
 
-## Quick start
+## Before you start — what to install on your host
 
-You need **Docker** (Docker Desktop on Windows/macOS, Docker Engine on Linux). That's the only hard
-dependency.
+**The only things you install on your own machine are Docker and Git.** Every security tool —
+John the Ripper, Hashcat, Hydra, CeWL, crunch, hashid/name-that-hash, SecLists, `rockyou.txt` — lives
+**inside the container**. You do **not** install any of those on your host.
+
+| Your OS | Install on the host | Notes |
+|---------|---------------------|-------|
+| **Windows 10/11** | [Docker Desktop](https://docs.docker.com/desktop/install/windows-install/) (use the **WSL 2** backend) + [Git for Windows](https://git-scm.com/download/win) | Enable CPU **virtualization** in BIOS/UEFI (Intel **VT-x** / AMD **SVM-Mode**) and the Windows **"Virtual Machine Platform"** + **WSL2** features — otherwise Docker Desktop won't start. |
+| **macOS — Intel** | [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/) + Git (`xcode-select --install`) | Works out of the box. |
+| **macOS — Apple Silicon (M1–M4, arm64)** | [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/) + Git | **Works — runs via emulation.** See the Apple Silicon note below. |
+| **Linux** | [Docker Engine + Compose plugin](https://docs.docker.com/engine/install/) + `git` | Add yourself to the `docker` group: `sudo usermod -aG docker $USER` then log out/in, so you don't need `sudo`. |
+
+**Hardware:** ~**5 GB** free disk for the image, **4 GB+ RAM** (Docker Desktop defaults are fine).
+Confirm Docker is ready with **`docker info`** — you want a "Server:" section and no connection error.
+
+> 🍎 **Apple Silicon (arm64) note — yes, it works.** This image is built for **linux/amd64**. On an
+> M-series Mac, Docker Desktop runs it through **Rosetta / QEMU emulation**, so you'll see a one-line
+> warning like *"The requested image's platform (linux/amd64) does not match the detected host
+> platform (linux/arm64/v8)."* **That warning is expected and harmless — the container runs fine**
+> (just slightly slower than native; the challenges are tuned so you won't notice). `docker-compose.yml`
+> already pins `platform: linux/amd64`, which is why everything just works.
+
+---
+
+## Quick start
 
 ### Fastest — pull the prebuilt image (no build)
 ```bash
