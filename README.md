@@ -1,6 +1,6 @@
 # crackstation — Cracking the Code lab
 
-A safe, **local-only, offline** password-cracking lab for the *Cracking the Code: Passwords, Hashes,
+A safe, password-cracking lab for the *Cracking the Code: Passwords, Hashes,
 and the Tools that Break Them* class (DC256 × NAC-ISSA). One Docker image gives everyone the same
 toolbox — John the Ripper, Hashcat (CPU-ready), Hydra, CeWL, crunch, hashid/name-that-hash, SecLists,
 and `rockyou.txt` — plus an intentionally weak local login target for the online-guessing exercise.
