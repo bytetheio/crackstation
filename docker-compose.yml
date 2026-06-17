@@ -1,22 +1,17 @@
-# Cracking the Code — local, offline lab.
+# Cracking the Code — the lab.
 #
-# SAFETY: the 'cracklab' network is marked `internal: true` — at RUNTIME these
-# containers cannot reach the internet or your LAN. The vuln-login target has NO
-# published host ports; it is reachable ONLY from crackstation over the internal
-# Docker network. The offline hash challenges (C1–C8) never touch a third-party
-# system.
-#
-# C9 (Dillon's Cookie Shop) is the ONE online web challenge — it lives on the
-# internet at https://cookies.0byte.sh, so it needs egress. Rather than open up
-# the offline toolbox, there's a SEPARATE 'crackstation-web' service on a normal
-# (non-internal) network used ONLY for C9. The main 'crackstation' stays fully
-# sandboxed.
+# One toolbox service: `crackstation`. It can reach BOTH:
+#   - the internet  -> for C9, the online Dillon's Cookie Shop at cookies.0byte.sh
+#   - vuln-login     -> for C6, Hydra over SSH (on the shared lab network)
+# Everything the challenges use is local synthetic data (toy hashes, fake users).
 #
 # Quick start:
-#   docker compose build
-#   docker compose up -d vuln-login          # start the Hydra target
-#   docker compose run --rm crackstation      # offline toolbox (C1–C8, C6)
-#   docker compose run --rm crackstation-web  # internet-enabled toolbox (C9 only)
+#   docker compose build            # or: docker compose pull
+#   docker compose up -d vuln-login          # start the Hydra SSH target (C6)
+#   docker compose run --rm crackstation      # drop into the toolbox
+#   # C9 (online):  hydra -l dillon -P /lab/wordlists/cookie-wordlist.txt \
+#   #   cookies.0byte.sh -s 443 https-post-form \
+#   #   "/login:username=^USER^&password=^PASS^:F=Invalid credentials"
 # Teardown (removes everything, including volumes):
 #   docker compose down -v
 
@@ -24,11 +19,8 @@ services:
   crackstation:
     build: .
     # Published to GHCR so attendees can `docker pull` instead of building.
-    # `docker compose build` still works and (re)tags this same name locally.
     image: ghcr.io/bytetheio/crackstation:latest
-    # The image is amd64. Pinning this runs it natively on Intel/Windows and via
-    # Rosetta/QEMU emulation on Apple Silicon — and silences the platform-mismatch warning.
-    platform: linux/amd64
+    platform: linux/amd64   # amd64 image; runs via emulation on Apple Silicon
     container_name: crackstation
     hostname: crackstation
     networks: [cracklab]
@@ -38,8 +30,6 @@ services:
     working_dir: /work
     stdin_open: true
     tty: true
-    # Bring up the Hydra target automatically so `docker compose run crackstation`
-    # stages the whole lab in one command.
     depends_on: [vuln-login]
     command: /bin/bash
 
@@ -50,39 +40,14 @@ services:
     container_name: vuln-login
     hostname: vuln-login
     networks: [cracklab]
-    # NOTE: intentionally NO `ports:` mapping. Internal lab network only.
-
-  # ---------------------------------------------------------------------------
-  # C9 ONLY — internet-enabled toolbox for Dillon's Cookie Shop (cookies.0byte.sh).
-  # Same crackstation image (Hydra + rockyou + the cookie wordlist are baked in),
-  # but on a normal bridge network WITH egress. It is NOT on cracklab and is NOT
-  # started by default (profile: web), so the offline hash lab stays sandboxed.
-  #
-  #   docker compose run --rm crackstation-web
-  #   # then, inside:
-  #   hydra -l dillon -P /lab/wordlists/cookie-wordlist.txt cookies.0byte.sh -s 443 \
-  #     https-post-form "/login:username=^USER^&password=^PASS^:F=Invalid credentials"
-  # ---------------------------------------------------------------------------
-  crackstation-web:
-    image: ghcr.io/bytetheio/crackstation:latest
-    platform: linux/amd64
-    container_name: crackstation-web
-    hostname: crackstation-web
-    profiles: ["web"]         # not part of the default `up`; start it explicitly for C9
-    networks: [egress]
-    volumes:
-      - ./:/lab:ro
-      - ./work:/work
-    working_dir: /work
-    stdin_open: true
-    tty: true
-    command: /bin/bash
+    # NOTE: intentionally NO published `ports:` — it's reachable only from
+    # crackstation over the lab network, never exposed inbound to your LAN.
 
 networks:
+  # A normal bridge (NOT internal) so crackstation has internet egress for C9.
+  # Left unnamed so Compose always creates/manages it fresh — avoids reusing a
+  # stale `cracklab` network that an earlier (internal-only) version may have left
+  # behind on your machine. vuln-login is still reached by its hostname, so C6
+  # is unaffected.
   cracklab:
-    name: cracklab
     driver: bridge
-    internal: true            # no egress to the internet / host LAN at runtime
-  egress:
-    name: cracklab-egress
-    driver: bridge            # normal bridge WITH NAT — reaches the internet (C9 only)
