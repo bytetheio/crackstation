@@ -3,12 +3,20 @@
 # SAFETY: the 'cracklab' network is marked `internal: true` — at RUNTIME these
 # containers cannot reach the internet or your LAN. The vuln-login target has NO
 # published host ports; it is reachable ONLY from crackstation over the internal
-# Docker network. Nothing here ever touches a third-party system.
+# Docker network. The offline hash challenges (C1–C8) never touch a third-party
+# system.
+#
+# C9 (Dillon's Cookie Shop) is the ONE online web challenge — it lives on the
+# internet at https://cookies.0byte.sh, so it needs egress. Rather than open up
+# the offline toolbox, there's a SEPARATE 'crackstation-web' service on a normal
+# (non-internal) network used ONLY for C9. The main 'crackstation' stays fully
+# sandboxed.
 #
 # Quick start:
 #   docker compose build
 #   docker compose up -d vuln-login          # start the Hydra target
-#   docker compose run --rm crackstation      # drop into the toolbox
+#   docker compose run --rm crackstation      # offline toolbox (C1–C8, C6)
+#   docker compose run --rm crackstation-web  # internet-enabled toolbox (C9 only)
 # Teardown (removes everything, including volumes):
 #   docker compose down -v
 
@@ -44,8 +52,37 @@ services:
     networks: [cracklab]
     # NOTE: intentionally NO `ports:` mapping. Internal lab network only.
 
+  # ---------------------------------------------------------------------------
+  # C9 ONLY — internet-enabled toolbox for Dillon's Cookie Shop (cookies.0byte.sh).
+  # Same crackstation image (Hydra + rockyou + the cookie wordlist are baked in),
+  # but on a normal bridge network WITH egress. It is NOT on cracklab and is NOT
+  # started by default (profile: web), so the offline hash lab stays sandboxed.
+  #
+  #   docker compose run --rm crackstation-web
+  #   # then, inside:
+  #   hydra -l dillon -P /lab/wordlists/cookie-wordlist.txt cookies.0byte.sh -s 443 \
+  #     https-post-form "/login:username=^USER^&password=^PASS^:F=Invalid credentials"
+  # ---------------------------------------------------------------------------
+  crackstation-web:
+    image: ghcr.io/bytetheio/crackstation:latest
+    platform: linux/amd64
+    container_name: crackstation-web
+    hostname: crackstation-web
+    profiles: ["web"]         # not part of the default `up`; start it explicitly for C9
+    networks: [egress]
+    volumes:
+      - ./:/lab:ro
+      - ./work:/work
+    working_dir: /work
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
 networks:
   cracklab:
     name: cracklab
     driver: bridge
     internal: true            # no egress to the internet / host LAN at runtime
+  egress:
+    name: cracklab-egress
+    driver: bridge            # normal bridge WITH NAT — reaches the internet (C9 only)
