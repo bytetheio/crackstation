@@ -13,6 +13,13 @@ if [ ! -f /usr/share/wordlists/rockyou.txt ] && [ -f /usr/share/wordlists/rockyo
     gunzip -k /usr/share/wordlists/rockyou.txt.gz 2>/dev/null || true
 fi
 
+# Auto-serve the fake "company intranet" so Challenge 5 (CeWL) is a SINGLE command —
+# no need to start a web server yourself. It's reachable only inside this container.
+#   cewl http://127.0.0.1:8000/intranet.html -m 4 -w /work/custom.txt
+if [ -d /lab/web ] && command -v python3 >/dev/null 2>&1; then
+    ( cd /lab/web && python3 -m http.server 8000 --bind 127.0.0.1 ) >/dev/null 2>&1 &
+fi
+
 # Show the banner only for interactive sessions.
 if [ -t 1 ]; then
 cat <<BANNER
@@ -27,7 +34,7 @@ cat <<BANNER
     wordlists ->  /lab/wordlists/  and  \$ROCKYOU
                   ($ROCKYOU)
     rules     ->  /lab/rules/class.rule
-    cewl page ->  /lab/web/intranet.html
+    C5 intranet-> http://127.0.0.1:8000/intranet.html  (already served — just CeWL it)
     your loot ->  /work   (saved to your PC)
 
   First crack (Challenge 1):
