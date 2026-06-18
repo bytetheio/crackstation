@@ -6,7 +6,7 @@ toolbox — John the Ripper, Hashcat (CPU-ready), Hydra, CeWL, crunch, hashid/na
 and `rockyou.txt` — plus an intentionally weak local login target for the online-guessing exercise.
 
 > ⚖️ **Lab only.** Everything here runs against **synthetic data we generate ourselves** — toy
-> hashes, fake users, deliberately weak passwords. There are **no internet targets**. Cracking
+> hashes, fake users, deliberately weak passwords. Cracking
 > credentials you don't own or aren't authorized to test is illegal (e.g. the U.S. Computer Fraud and
 > Abuse Act). Keep these techniques inside this lab or systems you own / are authorized to test.
 
